@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高中日常大冒險：我的安心超能力（注音與語音版）</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes bounce-fun {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-12px) scale(1.05); }
+    }
+    @keyframes star-pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-fun {
+      animation: bounce-fun 2s infinite ease-in-out;
+    }
+    .star-pop {
+      animation: star-pop 0.5s ease-out forwards;
+    }
+    /* 彩帶紙花容器 */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body class="bg-amber-50 text-slate-800 antialiased min-h-screen flex flex-col items-center justify-start p-3 sm:p-5 select-none font-sans">
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- 主容器：圓角大卡片，專為低年級觸控設計 -->
+  <div class="w-full max-w-xl bg-white border-4 border-indigo-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto relative">
+    
+    <!-- 頂部繽紛標題列 -->
+    <header class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center space-x-2">
+          <span class="text-3xl animate-bounce">🎒</span>
+          <div>
+            <h1 class="font-black text-xl sm:text-2xl tracking-wide drop-shadow-sm">高中大冒險</h1>
+            <p class="text-xs text-blue-100 font-bold">我是成熟的大孩子！</p>
+          </div>
+        </div>
+        
+        <!-- 語音切換開關 -->
+        <div class="flex items-center space-x-2">
+          <button id="voiceToggleBtn" onclick="toggleVoice()" class="bg-white/20 hover:bg-white/30 active:scale-95 text-white px-3 py-1.5 rounded-full text-xs sm:text-sm font-bold backdrop-blur-sm border border-white/30 flex items-center space-x-1 shadow">
+            <span id="voiceIcon">🔊</span>
+            <span id="voiceStatusText">語音開</span>
+          </button>
+          <span id="stageBadge" class="bg-amber-300 text-indigo-900 font-black px-3 py-1 rounded-full text-xs sm:text-sm shadow">
+            第 1 關
+          </span>
+        </div>
+      </div>
+      
+      <!-- 棒棒糖能量條 -->
+      <div class="space-y-1 mt-2">
+        <div class="flex justify-between text-xs font-black text-amber-200">
+          <span>🌟 安心超能力能量</span>
+          <span id="energyNum" class="text-sm">0%</span>
+        </div>
+        <div class="w-full bg-black/25 rounded-full h-4 p-0.5 border border-white/20">
+          <div id="energyFill" class="bg-gradient-to-r from-amber-300 via-yellow-400 to-emerald-400 h-full rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- 榮譽徽章收集槽 -->
+      <div class="flex items-center justify-between mt-3 pt-2 border-t border-white/20">
+        <span class="text-xs font-bold text-white/90">🏅 收集徽章：</span>
+        <div class="flex space-x-2 text-xl" id="trophyRow">
+          <span id="badge-1" class="opacity-25 filter grayscale transition-all duration-500 transform hover:scale-110" title="義班守護者">🏫</span>
+          <span id="badge-2" class="opacity-25 filter grayscale transition-all duration-500 transform hover:scale-110" title="一隻手臂距離">🛡️</span>
+          <span id="badge-3" class="opacity-25 filter grayscale transition-all duration-500 transform hover:scale-110" title="預告通行卡">🎫</span>
+          <span id="badge-4" class="opacity-25 filter grayscale transition-all duration-500 transform hover:scale-110" title="安心放學星">⭐</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 遊戲主要內容畫面 -->
+    <main id="mainPanel" class="p-4 sm:p-6 flex-1 flex flex-col justify-between">
+      
+      <!-- 1. 開始畫面 -->
+      <div id="startScreen" class="text-center py-4 space-y-5">
+        <div class="inline-block p-4 bg-amber-100 rounded-full border-4 border-amber-300 animate-fun shadow-inner">
+          <span class="text-6xl sm:text-7xl">🧑‍🎓⭐</span>
+        </div>
+        
+        <div class="space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-black text-indigo-900">
+            哈囉！高中的大朋友！
+          </h2>
+          <p class="text-slate-600 text-base sm:text-lg font-medium leading-relaxed max-w-sm mx-auto">
+            我們一起來玩情境闖關！<br>
+            動動腦筋，選出最帥氣、最棒的方法吧！
+          </p>
+        </div>
+
+        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 text-left max-w-sm mx-auto space-y-2">
+          <div class="font-black text-indigo-800 text-sm flex items-center space-x-2">
+            <span class="text-xl">🎒</span>
+            <span>你的 4 個安心超能力：</span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+            1. 坐在位子看安心卡 🏫<br>
+            2. 伸出一隻手臂的距離 🛡️<br>
+            3. 走到老師身邊先舉手問 🎫<br>
+            4. 壓大腿深呼吸、看課表 ⭐
+          </p>
+        </div>
+
+        <button onclick="startGame()" class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xl rounded-2xl shadow-xl transform active:scale-95 transition-all flex items-center justify-center mx-auto space-x-2">
+          <span>🎮</span>
+          <span>按我開始玩！</span>
+          <span>✨</span>
+        </button>
+      </div>
+
+      <!-- 2. 關卡問答畫面 -->
+      <div id="gameScreen" class="hidden flex-col space-y-4">
+        
+        <!-- 題目大卡片 (小一好懂的大圖與短文字) -->
+        <div class="bg-indigo-50/70 border-3 border-indigo-200 rounded-3xl p-4 sm:p-5 relative shadow-sm">
+          <div class="flex items-center space-x-3 mb-2">
+            <span id="qIcon" class="text-4xl p-2 bg-white rounded-2xl shadow-sm border border-indigo-100 flex-shrink-0 animate-bounce">
+              🔔
+            </span>
+            <div class="flex-1">
+              <span id="qTag" class="text-xs bg-indigo-200 text-indigo-800 font-black px-2.5 py-0.5 rounded-full">
+                第 1 關
+              </span>
+              <h3 id="qTitle" class="text-lg sm:text-xl font-black text-indigo-950 mt-1 leading-snug">
+                噹噹噹！上課鐘聲響了！
+              </h3>
+            </div>
+            <!-- 語音朗讀題目按鈕 -->
+            <button onclick="speakCurrentQuestion()" class="p-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-2xl shadow-md active:scale-90 transition flex-shrink-0" title="按我聽題目">
+              <span class="text-xl">📢</span>
+            </button>
+          </div>
+
+          <!-- 題目詳細短句 -->
+          <div class="bg-white/90 p-3 rounded-2xl border border-indigo-100 mt-2">
+            <p id="qText" class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed">
+              鐘聲響了！大腦好想跑去別班找老師，我該怎麼辦？
+            </p>
+          </div>
+        </div>
+
+        <!-- 選項按鈕區 (超大點擊面積、大字、清晰圖標) -->
+        <div id="optionsList" class="space-y-3">
+          <!-- 由 JavaScript 填入選項 -->
+        </div>
+
+        <!-- 答題回饋區 (選完後彈出) -->
+        <div id="feedbackCard" class="hidden rounded-3xl p-4 sm:p-5 border-4 transition-all duration-300 shadow-xl">
+          <div class="flex items-start space-x-3">
+            <span id="feedbackEmoji" class="text-4xl sm:text-5xl flex-shrink-0">🎉</span>
+            <div class="space-y-2 flex-1">
+              <div class="flex items-center justify-between">
+                <h4 id="feedbackHeader" class="text-lg sm:text-xl font-black"></h4>
+                <!-- 語音重聽回饋按鈕 -->
+                <button onclick="speakFeedback()" class="px-2 py-1 bg-white/80 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex items-center space-x-1">
+                  <span>🔊</span><span>重聽語音</span>
+                </button>
+              </div>
+              <p id="feedbackMessage" class="text-base sm:text-lg font-bold leading-relaxed"></p>
+
+              <!-- 身邊人的心情 (Perspective 視覺化) -->
+              <div class="bg-white/90 p-2.5 rounded-xl border border-slate-200 text-sm font-bold flex items-center space-x-2 text-slate-800">
+                <span id="personEmoji" class="text-2xl">😊</span>
+                <span id="personMessage">老師覺得很安心！</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 下一步按鈕 -->
+          <div class="mt-4 pt-2 border-t border-black/10 flex justify-end">
+            <button id="actionBtn" class="w-full sm:w-auto px-8 py-3 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2">
+              <span>下一關</span>
+              <span>➡️</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. 過關領獎畫面 -->
+      <div id="winScreen" class="hidden text-center py-3 space-y-4">
+        <div class="inline-block p-4 bg-yellow-100 border-4 border-yellow-300 rounded-full animate-fun">
+          <span class="text-6xl sm:text-7xl">🏆</span>
+        </div>
+
+        <div class="space-y-1">
+          <h2 class="text-2xl sm:text-3xl font-black text-amber-900">
+            太棒了！全關卡大成功！
+          </h2>
+          <p class="text-slate-700 font-bold text-base sm:text-lg">
+            你是最帥氣、最棒的高中大哥哥！
+          </p>
+        </div>
+
+        <!-- 獎狀卡片 -->
+        <div class="bg-gradient-to-br from-amber-50 to-orange-50 border-4 border-dashed border-amber-400 rounded-3xl p-5 max-w-md mx-auto shadow-md text-left space-y-3">
+          <div class="text-center pb-2 border-b-2 border-amber-200">
+            <span class="text-xl sm:text-2xl font-black text-amber-900">🌟 100分高中生榮譽獎狀</span>
+          </div>
+
+          <div class="flex items-center space-x-2 text-base font-bold text-slate-800">
+            <span>獎勵給聰明的：</span>
+            <input id="userNameInput" type="text" value="沐恩" class="bg-white border-2 border-amber-300 rounded-xl px-3 py-1 font-black text-indigo-700 text-center w-28 text-lg focus:outline-none focus:ring-2 focus:ring-amber-400">
+            <button onclick="speakAward()" class="p-1 bg-amber-200 rounded-lg text-sm" title="聽獎狀">🔊</button>
+          </div>
+
+          <div class="space-y-1.5 text-xs sm:text-sm font-bold text-slate-700">
+            <div class="flex items-center space-x-1.5">✅ <span>在自己的班級專心學習</span> 🏫</div>
+            <div class="flex items-center space-x-1.5">✅ <span>和大家保持一隻手臂距離</span> 🛡️</div>
+            <div class="flex items-center space-x-1.5">✅ <span>想出去先問老師拿通行卡</span> 🎫</div>
+            <div class="flex items-center space-x-1.5">✅ <span>深呼吸看課表，安心放學</span> ⭐</div>
+          </div>
+
+          <div class="pt-2 border-t-2 border-amber-200 flex justify-between items-center text-xs font-black text-amber-800">
+            <span>高中（義）班 老師拍拍手</span>
+            <span class="text-xl">💯 特優</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-3 pt-1">
+          <button onclick="window.print()" class="px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-2xl shadow transition flex items-center justify-center space-x-2">
+            <span>🖨️</span>
+            <span>印出榮譽獎狀</span>
+          </button>
+          <button onclick="restartGame()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl shadow transition flex items-center justify-center space-x-2">
+            <span>🔄</span>
+            <span>再玩一次！</span>
+          </button>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- 底部注音與教育說明 -->
+    <footer class="bg-slate-50 border-t border-slate-200 px-4 py-2 text-center text-xs text-slate-400 font-medium">
+      專為小學一年級閱讀程度設計 • 語音朗讀與正向行為支持 (PBS)
+    </footer>
+
+  </div>
+
+  <script>
+    // ==========================================
+    // 1. 語音系統模組 (Web Speech API 繁體中文)
+    // ==========================================
+    let isVoiceOn = true;
+    let currentVoiceText = "";
+
+    function toggleVoice() {
+      isVoiceOn = !isVoiceOn;
+      document.getElementById('voiceIcon').textContent = isVoiceOn ? '🔊' : '🔇';
+      document.getElementById('voiceStatusText').textContent = isVoiceOn ? '語音開' : '語音關';
+      if (!isVoiceOn) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function speak(text, pitch = 1.1, rate = 0.95) {
+      if (!isVoiceOn) return;
+      if (!('speechSynthesis' in window)) return;
+
+      window.speechSynthesis.cancel(); // 停止先前的朗讀
+      currentVoiceText = text;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'zh-TW';
+      utterance.pitch = pitch; // 稍微活潑可愛的語調
+      utterance.rate = rate;   // 稍慢一點，低年級容易聽清楚
+
+      // 嘗試選取繁體中文語音
+      const voices = window.speechSynthesis.getVoices();
+      const twVoice = voices.find(v => v.lang.includes('zh-TW') || v.lang.includes('TW'));
+      if (twVoice) {
+        utterance.voice = twVoice;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ==========================================
+    // 2. 音效系統 (Web Audio API 合成音)
+    // ==========================================
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playBeep(freq, duration, type = 'sine') {
+      try {
+        const ctx = getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playCheerSound() {
+      playBeep(523.25, 0.15); // C5
+      setTimeout(() => playBeep(659.25, 0.15), 100); // E5
+      setTimeout(() => playBeep(783.99, 0.2), 200);  // G5
+      setTimeout(() => playBeep(1046.50, 0.35, 'triangle'), 300); // C6
+    }
+
+    function playRetrySound() {
+      playBeep(392.00, 0.2); // G4
+      setTimeout(() => playBeep(329.63, 0.25), 150); // E4
+    }
+
+    // ==========================================
+    // 3. 彩帶紙花動畫效果 (Confetti Canvas)
+    // ==========================================
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cCtx = confettiCanvas.getContext('2d');
+    let confettiParticles = [];
+
+    function resizeConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeConfetti);
+    resizeConfetti();
+
+    function triggerConfetti() {
+      confettiParticles = [];
+      const colors = ['#f43f5e', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+      for (let i = 0; i < 70; i++) {
+        confettiParticles.push({
+          x: window.innerWidth / 2,
+          y: window.innerHeight / 2 - 50,
+          vx: (Math.random() - 0.5) * 12,
+          vy: (Math.random() - 0.8) * 14,
+          size: Math.random() * 8 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+          opacity: 1
+        });
+      }
+      renderConfetti();
+    }
+
+    function renderConfetti() {
+      cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      let alive = false;
+      confettiParticles.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.3; // 重力
+        p.rotation += p.vRot;
+        p.opacity -= 0.012;
+
+        if (p.opacity > 0) {
+          alive = true;
+          cCtx.save();
+          cCtx.translate(p.x, p.y);
+          cCtx.rotate((p.rotation * Math.PI) / 180);
+          cCtx.fillStyle = p.color;
+          cCtx.globalAlpha = Math.max(0, p.opacity);
+          cCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+          cCtx.restore();
+        }
+      });
+      if (alive) {
+        requestAnimationFrame(renderConfetti);
+      } else {
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      }
+    }
+
+    // ==========================================
+    // 4. 關卡題庫（專為小一設計：短句、注音感、大圖標）
+    // ==========================================
+    const LEVELS = [
+      {
+        id: 1,
+        badgeId: "badge-1",
+        icon: "🔔",
+        title: "噹噹噹！上課鐘聲響了！",
+        tag: "第 1 關：在自己班級",
+        desc: "上課了！大腦好想跑去別班找老師，我該怎麼做？",
+        speechText: "第一關！上課鐘聲響了。大腦好想跑去別的班級找老師，我該怎麼做呢？",
+        options: [
+          {
+            id: 'A',
+            icon: "🏃‍♂️",
+            text: "不管鐘聲，馬上跑去別班看熱鬧",
+            isBest: false,
+            voiceTitle: "大腦踩煞車！",
+            voiceMsg: "別班的老師在上課喔！我們突然跑過去，會吵到大家學習。坐在自己的位子上最棒！",
+            person: "別班老師會嚇一跳，上課被打擾了！",
+            personEmoji: "😮"
+          },
+          {
+            id: 'B',
+            icon: "🪑",
+            text: "深呼吸，看桌上的安心卡，坐在自己位子上",
+            isBest: true,
+            voiceTitle: "太棒了！答對了！",
+            voiceMsg: "太帥了！坐在自己的位子上，看安心卡。義班老師覺得好安心，你是一百分的大哥哥！",
+            person: "義班老師好安心，誇獎你好懂事！",
+            personEmoji: "🥰"
+          }
+        ]
+      },
+      {
+        id: 2,
+        badgeId: "badge-2",
+        icon: "🙋‍♂️",
+        title: "下課了！我想跟同學打招呼！",
+        tag: "第 2 關：神奇的一臂距離",
+        desc: "我想跟同學說說話，我要站在哪裡最舒服？",
+        speechText: "第二關！我想跟新同學打招呼，我要站在哪裡最舒服呢？",
+        options: [
+          {
+            id: 'A',
+            icon: "🛡️",
+            text: "退後一步，伸出一隻手臂的距離，微笑說：「你好！」",
+            isBest: true,
+            voiceTitle: "哇！好有禮貌！",
+            voiceMsg: "答對了！伸出一隻手臂的距離，像一個神奇防護罩！大家呼吸很順暢，好喜歡跟你做朋友！",
+            person: "同學覺得很放鬆、好舒服，開心地對你笑！",
+            personEmoji: "😄"
+          },
+          {
+            id: 'B',
+            icon: "🫂",
+            text: "整個人靠在他身上，臉靠很近盯著看",
+            isBest: false,
+            voiceTitle: "退後一步試試看！",
+            voiceMsg: "太近了太近了！靠太近大家會覺得空間好擠、心裡緊張。退後一步，伸出手臂比一下喔！",
+            person: "同學覺得好擠好緊張，不知道該怎麼辦！",
+            personEmoji: "😣"
+          }
+        ]
+      },
+      {
+        id: 3,
+        badgeId: "badge-3",
+        icon: "🚽",
+        title: "我想去上廁所、喝水水！",
+        tag: "第 3 關：先問老師拿通行卡",
+        desc: "肚子咕嚕嚕想上廁所，我可以自己跑出去嗎？",
+        speechText: "第三關！我想去上廁所喝水，我要怎麼做呢？",
+        options: [
+          {
+            id: 'A',
+            icon: "🚪",
+            text: "不說話，自己偷偷從後門跑出去",
+            isBest: false,
+            voiceTitle: "等等！老師會著急！",
+            voiceMsg: "不可以偷偷跑出去喔！老師回頭找不到你，會非常擔心緊張，要到處找你！",
+            person: "老師找不到你，心裡好緊張！",
+            personEmoji: "😟"
+          },
+          {
+            id: 'B',
+            icon: "🎫",
+            text: "走到老師身邊，舉手說：「老師，我想去上廁所」，拿通行卡才去",
+            isBest: true,
+            voiceTitle: "超級聰明！",
+            voiceMsg: "好厲害！走到老師身邊先舉手問，拿到外出通行卡才出發。老師清楚你在哪裡，好安心！",
+            person: "老師點點頭說好，覺得你很可靠又安全！",
+            personEmoji: "👍"
+          }
+        ]
+      },
+      {
+        id: 4,
+        badgeId: "badge-4",
+        icon: "🎒",
+        title: "媽媽出門了，同學提早背書包...",
+        tag: "第 4 關：深呼吸看課表",
+        desc: "媽媽出遠門，同學提早背書包，我心裡緊張想衝去二樓找老師？",
+        speechText: "第四關！媽媽出遠門，有同學提早背書包，我心裡好緊張，該怎麼辦？",
+        options: [
+          {
+            id: 'A',
+            icon: "🧘‍♂️",
+            text: "雙手壓大腿深呼吸，看倒數日曆，時間到了才背書包",
+            isBest: true,
+            voiceTitle: "第一名大師！",
+            voiceMsg: "太令人佩服了！壓大腿深呼吸，看倒數日曆。媽媽過幾天就回家了，你按照課表放學，媽媽在遠方好放心！",
+            person: "媽媽好放心，老師誇獎你超棒！",
+            personEmoji: "❤️"
+          },
+          {
+            id: 'B',
+            icon: "📢",
+            text: "大吵大鬧，抓起書包衝去二樓找別的老師",
+            isBest: false,
+            voiceTitle: "大腦深呼吸三次～",
+            voiceMsg: "二樓老師正在上課喔！抓起書包跑出去會打擾別人。捏捏桌上的舒壓球，我們照課表放學！",
+            person: "二樓的班級被打擾了，大家都不知道該怎麼辦。",
+            personEmoji: "💦"
+          }
+        ]
+      }
+    ];
+
+    // ==========================================
+    // 5. 遊戲邏輯控制
+    // ==========================================
+    let currentLevel = 0;
+    let score = 0;
+    let unlocked = new Set();
+    let lastFeedbackSpeech = "";
+
+    function startGame() {
+      getAudioCtx();
+      playCheerSound();
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('gameScreen').classList.remove('hidden');
+      document.getElementById('gameScreen').classList.add('flex');
+      loadLevel(0);
+    }
+
+    function loadLevel(idx) {
+      currentLevel = idx;
+      const lvl = LEVELS[idx];
+
+      // 更新進度顯示
+      document.getElementById('stageBadge').textContent = `第 ${idx + 1} 關`;
+      document.getElementById('qTag').textContent = lvl.tag;
+      document.getElementById('qIcon').textContent = lvl.icon;
+      document.getElementById('qTitle').textContent = lvl.title;
+      document.getElementById('qText').textContent = lvl.desc;
+
+      // 隱藏回饋卡
+      document.getElementById('feedbackCard').classList.add('hidden');
+
+      // 朗讀題目
+      speak(lvl.speechText);
+
+      // 渲染選項按鈕（超大卡片式）
+      const container = document.getElementById('optionsList');
+      container.innerHTML = '';
+
+      lvl.options.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.id = `btn-opt-${opt.id}`;
+        btn.className = "w-full text-left p-4 rounded-2xl border-3 border-slate-200 bg-white hover:bg-amber-50 active:scale-98 transition shadow-sm flex items-center space-x-3";
+        btn.onclick = () => selectOption(opt);
+        btn.innerHTML = `
+          <span class="text-3xl p-2 bg-indigo-50 rounded-2xl flex-shrink-0">${opt.icon}</span>
+          <div class="flex-1">
+            <span class="text-base sm:text-lg font-black text-slate-800 leading-snug block">${opt.text}</span>
+          </div>
+          <span class="text-xs bg-slate-100 text-slate-500 font-bold px-2 py-1 rounded-lg">按我選</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function speakCurrentQuestion() {
+      const lvl = LEVELS[currentLevel];
+      speak(lvl.speechText);
+    }
+
+    function selectOption(opt) {
+      getAudioCtx();
+      const lvl = LEVELS[currentLevel];
+      const card = document.getElementById('feedbackCard');
+      const emoji = document.getElementById('feedbackEmoji');
+      const header = document.getElementById('feedbackHeader');
+      const msg = document.getElementById('feedbackMessage');
+      const pEmoji = document.getElementById('personEmoji');
+      const pMsg = document.getElementById('personMessage');
+      const actionBtn = document.getElementById('actionBtn');
+
+      header.textContent = opt.voiceTitle;
+      msg.textContent = opt.voiceMsg;
+      pEmoji.textContent = opt.personEmoji;
+      pMsg.textContent = opt.person;
+      lastFeedbackSpeech = `${opt.voiceTitle}。${opt.voiceMsg}。${opt.person}`;
+
+      // 語音念出回饋！
+      speak(lastFeedbackSpeech);
+
+      if (opt.isBest) {
+        playCheerSound();
+        triggerConfetti();
+
+        card.className = "rounded-3xl p-4 sm:p-5 border-4 border-emerald-400 bg-emerald-50 text-emerald-950 transition-all duration-300 shadow-xl block star-pop";
+        emoji.textContent = "🌟";
+
+        // 加分與解鎖
+        if (!unlocked.has(lvl.badgeId)) {
+          unlocked.add(lvl.badgeId);
+          score += 25;
+          updateScore();
+          const badgeEl = document.getElementById(lvl.badgeId);
+          if (badgeEl) {
+            badgeEl.classList.remove('opacity-25', 'grayscale');
+            badgeEl.classList.add('scale-125');
+            setTimeout(() => badgeEl.classList.remove('scale-125'), 500);
+          }
+        }
+
+        actionBtn.className = "w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2";
+        actionBtn.innerHTML = currentLevel === LEVELS.length - 1 ? 
+          `<span>🎉 領取大獎狀！</span>` : 
+          `<span>太棒了，前進下一關 ➡️</span>`;
+        actionBtn.onclick = nextLevel;
+
+        // 鎖定選項
+        lvl.options.forEach(o => {
+          const b = document.getElementById(`btn-opt-${o.id}`);
+          if (b) {
+            b.disabled = true;
+            if (o.id === opt.id) {
+              b.classList.add('border-emerald-500', 'bg-emerald-100', 'ring-2', 'ring-emerald-400');
+            } else {
+              b.classList.add('opacity-40');
+            }
+          }
+        });
+
+      } else {
+        playRetrySound();
+
+        card.className = "rounded-3xl p-4 sm:p-5 border-4 border-amber-400 bg-amber-50 text-amber-950 transition-all duration-300 shadow-xl block";
+        emoji.textContent = "💡";
+
+        actionBtn.className = "w-full sm:w-auto px-8 py-3 bg-amber-600 hover:bg-amber-700 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition flex items-center justify-center space-x-2";
+        actionBtn.innerHTML = `<span>再想一想，我選最棒的！🔄</span>`;
+        actionBtn.onclick = () => {
+          card.classList.add('hidden');
+          speakCurrentQuestion();
+        };
+
+        const b = document.getElementById(`btn-opt-${opt.id}`);
+        if (b) b.classList.add('border-amber-300', 'bg-amber-100/60');
+      }
+
+      card.classList.remove('hidden');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function speakFeedback() {
+      if (lastFeedbackSpeech) speak(lastFeedbackSpeech);
+    }
+
+    function updateScore() {
+      document.getElementById('energyFill').style.width = `${score}%`;
+      document.getElementById('energyNum').textContent = `${score}%`;
+    }
+
+    function nextLevel() {
+      if (currentLevel < LEVELS.length - 1) {
+        loadLevel(currentLevel + 1);
+      } else {
+        finishGame();
+      }
+    }
+
+    function finishGame() {
+      playCheerSound();
+      triggerConfetti();
+      document.getElementById('gameScreen').classList.add('hidden');
+      document.getElementById('gameScreen').classList.remove('flex');
+      document.getElementById('winScreen').classList.remove('hidden');
+      document.getElementById('stageBadge').textContent = "全部通關！🎉";
+
+      const name = document.getElementById('userNameInput').value || "沐恩";
+      const winSpeech = `太棒了！恭喜${name}大成功！你掌握了所有安心超能力，是一百分優秀的高中大哥哥！大家都為你拍拍手！`;
+      speak(winSpeech);
+    }
+
+    function speakAward() {
+      const name = document.getElementById('userNameInput').value || "沐恩";
+      speak(`頒發給聰明的${name}，一百分高中生榮譽獎狀！你懂得在自己的班級學習、保持一隻手臂距離、外出先問老師、還有深呼吸看課表！太帥氣了！`);
+    }
+
+    function restartGame() {
+      score = 0;
+      unlocked.clear();
+      updateScore();
+      ['badge-1', 'badge-2', 'badge-3', 'badge-4'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('opacity-25', 'grayscale');
+      });
+      document.getElementById('winScreen').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      speak("我們再玩一次，鞏固你的安心超能力！");
+    }
+  </script>
+</body>
+</html>
